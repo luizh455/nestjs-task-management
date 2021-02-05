@@ -7,7 +7,7 @@ import { AuthModule } from './auth/auth.module';
   imports: [
     TypeOrmModule.forRoot(typeOrmConfig),
     TasksModule,
-    AuthModule],
+    AuthModule],  
   
  
   

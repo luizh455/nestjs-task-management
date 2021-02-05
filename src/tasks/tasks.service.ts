@@ -7,6 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TaskRepository } from './task.repository';
 import { Task } from './task.entity';
 import { TaskStatus } from './task-status.enum';
+import { User } from 'src/auth/user.entity';
+import { GetUser } from 'src/auth/get-user.decorator';
 
 @Injectable()
 export class TasksService {
@@ -17,9 +19,10 @@ export class TasksService {
 
   ) { }
   
-  async getTaskById(id: number) : Promise<Task>
+  async getTaskById(id: number,
+    user: User): Promise<Task>
   {
-    const found = await this.taskRepository.findOne(id);
+    const found = await this.taskRepository.findOne({where: {id,userId: user.id}});
 
     if (!found) {
       throw new NotFoundException(`Task with ID ${id} not found`);
@@ -29,13 +32,14 @@ export class TasksService {
 
   }
 
-  async createTask(createTaktDto: CreateTaskDto): Promise<Task>
+  async createTask(createTaktDto: CreateTaskDto,
+  user: User): Promise<Task>
   {
-    return this.taskRepository.createTask(createTaktDto);
+    return this.taskRepository.createTask(createTaktDto, user);
   }
 
-  async deleteTask(id: number) {
-    const result = await this.taskRepository.delete(id);
+  async deleteTask(id: number, user: User) {
+    const result = await this.taskRepository.delete({id, userId: user.id});
 
     if (result.affected === 0)
     {
@@ -44,8 +48,9 @@ export class TasksService {
         
   }
 
-  async updateTaskStatus(id: number, status: TaskStatus) :Promise<Task>{
-    const task = await this.getTaskById(id);
+  async updateTaskStatus(id: number, status: TaskStatus,
+  user: User): Promise<Task>{
+    const task = await this.getTaskById(id, user);
 
     task.status = status;
 
@@ -55,49 +60,8 @@ export class TasksService {
     
   }
 
-  async getTasks(filterDto: GetTasksFilterDto):Promise<Task[]> {
-    return this.taskRepository.getTasks(filterDto);
+  async getTasks(filterDto: GetTasksFilterDto, user: User):Promise<Task[]> {
+    return this.taskRepository.getTasks(filterDto, user);
     
   }
-
-
-//   getAllTasks() : Task[]
-// {''
-//     return this.tasks;
-//   }
-
-//   getTaskById(id: string): Task
-//   {
-//     const found = this.tasks.find(task => task.id === id);
-
-//     if (!found) {
-//       throw new NotFoundException(`Task with ID ${id} not found`);
-//     }
-//     return found;
-//   }
-
-//   getTasksWithFilters(filterDto: GetTasksFilterDto): Task[] {
-
-//     const { status, search } = filterDto;
-
-//     let tasks = this.getAllTasks();
-    
-//     if (status) {
-//       tasks = tasks.filter(task=>task.status===status)
-//     }
-
-//     if (search) {
-//       tasks = tasks.filter( task =>
-//         task.title.includes(search) || task.description.includes(search),
-//       )
-//     }
-
-
-//     return tasks;
-//   }
-
-
-
-
-
 } 
